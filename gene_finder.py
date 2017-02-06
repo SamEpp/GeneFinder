@@ -9,6 +9,7 @@ the start and end condons as well as the frame of refrence.
 import random
 from amino_acids import aa, codons, aa_table   # you may find these useful
 from load import load_seq
+dna = load_seq("./data/X73525.fa")
 
 
 def shuffle_string(s):
@@ -149,20 +150,29 @@ def longest_ORF(dna):
     >>> longest_ORF("ATGCGAATGTAGCATCAAA")
     'ATGCTACATTCGCAT'
     """
-    # TODO: implement this
-    pass
+    longest_strand = ""
+    for orf in find_all_ORFs_both_strands(dna):
+        if len(orf) > len(longest_strand):
+            longest_strand = orf
+    return longest_strand
+    # This will only keep track of the longest strand
+    #(not keep track of the shorter lines)
 
 
 def longest_ORF_noncoding(dna, num_trials):
     """ Computes the maximum length of the longest ORF over num_trials shuffles
         of the specfied DNA sequence
-
         dna: a DNA sequence
         num_trials: the number of random shuffles
         returns: the maximum length longest ORF """
-    # TODO: implement this
-    pass
-
+    longest_strand = 0
+    i = 0
+    while i < num_trials:
+        if len(longest_ORF(dna)) > longest_strand:
+            longest_strand = len(longest_ORF(dna))
+        dna = shuffle_string(dna)
+        i = i+1
+    return longest_strand
 
 def coding_strand_to_AA(dna):
     """ Computes the Protein encoded by a sequence of DNA.  This function
@@ -178,9 +188,13 @@ def coding_strand_to_AA(dna):
         >>> coding_strand_to_AA("ATGCCCGCTTT")
         'MPA'
     """
-    # TODO: implement this
-    pass
 
+    protien_string= ""
+    for index in range(0, len(dna), 3):
+        if len(dna[index:index+3]) == 3:
+            amino_acid = aa_table[dna[index:index+3]]
+            protien_string += amino_acid
+    return protien_string
 
 def gene_finder(dna):
     """ Returns the amino acid sequences that are likely coded by the specified dna
@@ -188,9 +202,25 @@ def gene_finder(dna):
         dna: a DNA sequence
         returns: a list of all amino acid sequences coded by the sequence dna.
     """
-    # TODO: implement this
-    pass
+    y = ""
+    protien_long_list = []
+    # took our the following line due to the impossibly high number it would return.
+    # m = longest_ORF_noncoding(dna, 1500)
+    m = 200
+    x_list = find_all_ORFs_both_strands(dna)
+    for x in x_list:
+        if len(x) > m:
+            protien_long_list.append(coding_strand_to_AA(x))
+    return protien_long_list
+
+
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    #doctest.testmod()
+    # the print command will make running the program easier
+    # Tested the program in "blast" and got a 100% match for salmonella
+    print(gene_finder(dna))
+    """
+    doctest.run_docstring_examples(coding_strand_to_AA, globals())
+    """
